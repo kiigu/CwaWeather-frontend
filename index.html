@@ -121,7 +121,9 @@
         }
 
         .hero-icon {
-            font-size: 5rem;
+            /* font-size: 5rem;  <-- 刪除這行 */
+            width: 100px;     /* <-- 加入這行，控制大圖示寬度 */
+            height: auto;     /* <-- 保持比例 */
             filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.1));
             animation: bounce 3s infinite;
         }
@@ -231,8 +233,13 @@
         }
 
         .mini-icon {
-            font-size: 2.5rem;
+            /* font-size: 2.5rem; <-- 刪除這行 */
+            width: 50px;       /* <-- 加入這行，控制小圖示寬度 */
+            height: auto;
             margin: 5px 0;
+            display: block;    /* <-- 確保圖片獨佔一行或置中 */
+            margin-left: auto; /* 讓圖片水平置中 */
+            margin-right: auto;
         }
 
         .mini-temp {
@@ -283,14 +290,24 @@
         const API_URL = "https://weather-kiigu.zeabur.app/api/weather/taipei";
 
         function getWeatherIcon(weather) {
-            if (!weather) return "🌤️";
-            if (weather.includes("晴")) return "☀️";
-            if (weather.includes("多雲")) return "⛅";
-            if (weather.includes("陰")) return "☁️";
-            if (weather.includes("雨")) return "🌧️";
-            if (weather.includes("雷")) return "⛈️";
-            return "🌤️";
+            const basePath = "./image/"; // 圖片存放目錄
+
+            if (!weather) return basePath + "suncloud.png";
+
+            if (weather.includes("晴"))
+                return basePath + "sun.png";
+            if (weather.includes("多雲"))
+                return basePath + "cloudy.png";
+            if (weather.includes("陰"))
+                return basePath + "overcast.png";
+            if (weather.includes("雨"))
+                return basePath + "rain.png";
+            if (weather.includes("雷"))
+                return basePath + "thunder.png";
+
+            return basePath + "suncloud.png";
         }
+
 
         function getAdvice(rainProb, maxTemp) {
             let rainIcon = "🌂";
@@ -331,13 +348,14 @@
             const advice = getAdvice(current.rain, current.maxTemp);
             const period = getTimePeriod(current.startTime);
             const avgTemp = Math.round((parseInt(current.maxTemp) + parseInt(current.minTemp)) / 2);
-
+            
+            // 修正點 A：在 img src 中呼叫 getWeatherIcon 函數
             document.getElementById('heroCard').innerHTML = `
                         <div class="hero-card">
                             <div class="hero-period">${period}</div>
                             <div class="hero-temp-container">
-                                <div class="hero-icon">${getWeatherIcon(current.weather)}</div>
-                                <div class="hero-temp">${avgTemp}°</div>
+                                    <img id="hero-icon" class="hero-icon" src="${getWeatherIcon(current.weather)}" alt="${current.weather}">
+                                    <div class="hero-temp">${avgTemp}°</div>
                             </div>
                             <div class="hero-desc">${current.weather}</div>
                             
@@ -360,22 +378,20 @@
             const scrollContainer = document.getElementById('futureForecasts');
             scrollContainer.innerHTML = '';
 
-            // 抓今天的日期數字 (例如 24)
             const todayDate = new Date().getDate();
 
             others.forEach(f => {
                 let p = getTimePeriod(f.startTime);
-
-                // 判斷該預報的日期是否跟今天不同，不同就是明天
                 const fDate = new Date(f.startTime);
                 if (fDate.getDate() !== todayDate) {
                     p = "明天" + p;
                 }
 
+                // 修正點 B：將 div 改為 img 標籤，並設定 src
                 scrollContainer.innerHTML += `
                             <div class="mini-card">
                                 <div class="mini-time">${p}</div>
-                                <div class="mini-icon">${getWeatherIcon(f.weather)}</div>
+                                <img class="mini-icon" src="${getWeatherIcon(f.weather)}" alt="${f.weather}">
                                 <div class="mini-temp">${f.minTemp}° - ${f.maxTemp}°</div>
                                 <div style="font-size:0.8rem; color:#888; margin-top:5px;">💧${f.rain}</div>
                             </div>
